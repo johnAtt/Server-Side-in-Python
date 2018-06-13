@@ -1,19 +1,22 @@
-$("#jerusalemPost").click( function() {
-console.log(document.cookie)
-    $.ajax({
+$( document ).ready(function() {
+    $("#jerusalemPost").click( function() {
+        $.ajax({
             type: "GET",
             dataType: 'json',
-            url: "http://localhost:7000/api/getFeedsJP",
+            url: "http://localhost:7001/api/getFeedsJP",
 
             success: function (response) {
-                $("#text").text("you last refreshed your headlines feed at " + document.cookie.slice(14,-11))
+            console.log(response)
+                var feed = response[0]
+                var last_seen = response[1]
+                 $("#text").text(last_seen)
                 $("#app").empty()
-                for (var i = 0; i < response.length; i++) {
-                       var newDiv=$("<div>")
+                for (var i = 0; i < feed.length; i++) {
+                       var newDiv=$("<li>")
                        var headlines=$("<a>")
                        newDiv.addClass("nameBox")
-                       headlines.text(response[i]["titles"])
-                       headlines.attr("href",response[i]["link"])
+                       headlines.text(feed[i]["titles"])
+                       headlines.attr("href",feed[i]["link"])
                        $("#app").append(newDiv)
                        newDiv.append(headlines)
                     }
@@ -32,17 +35,20 @@ $("#wallStreet").click( function() {
     $.ajax({
             type: "GET",
             dataType: 'json',
-            url: "http://localhost:7000/api/getFeedsDM",
+            url: "http://localhost:7001/api/getFeedsDM",
 
             success: function (response) {
-                $("#text").text("you last refreshed your headlines feed at " + document.cookie.slice(14,-11))
+            console.log(response)
+                var feed = response[0]
+                var last_seen = response[1]
+                $("#text").text(last_seen)
                 $("#app").empty()
-                for (var i = 0; i < response.length; i++) {
-                       var newDiv=$("<div>")
+                for (var i = 0; i < feed.length; i++) {
+                       var newDiv=$("<li>")
                        var headlines=$("<a>")
                        newDiv.addClass("nameBox")
-                       headlines.text(response[i]["titles"])
-                       headlines.attr("href",response[i]["link"])
+                       headlines.text(feed[i]["titles"])
+                       headlines.attr("href",feed[i]["link"])
                        $("#app").append(newDiv)
                        newDiv.append(headlines)
                     }
@@ -57,6 +63,8 @@ $("#wallStreet").click( function() {
         });
     });
 
-$("#refresh").click(function(){
-    location.reload()
-})
+    $("#refresh").click(function(){
+        location.reload()
+    });
+});
+

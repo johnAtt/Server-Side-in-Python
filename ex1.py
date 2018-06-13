@@ -1,28 +1,12 @@
 import json
-from bottle import route, run, get, HTTPResponse, response, request
+from bottle import route, run, get, HTTPResponse, response, request, Response
 import bottle as b
 import feedparser
 from datetime import datetime, timedelta
 
-feed = feedparser.parse("https://www.jpost.com/Rss/RssFeedsHeadlines.aspx")
-feed2 = feedparser.parse("http://www.dailymail.co.uk/articles.rss")
-headlines_JP = []
-headlines_DM = []
-
-for number in range(len(feed["entries"])):
-    headLines = {"titles": feed["entries"][number]["title"], "link": feed["entries"][number]["link"]}
-    headlines_JP.append(headLines)
-
-
-for article in range(len(feed2["entries"])):
-    headLines2 = {"titles": feed2["entries"][article]["title"], "link": feed2["entries"][article]["link"]}
-    headlines_DM.append(headLines2)
-
 
 @route('/')
 def index():
-    request.get_cookie("last_visited")
-    response.set_cookie(name="last_visited", value=str(datetime.now()), expires=datetime.now() + timedelta(days=30))
     return b.template("ex1.html")
 
 
@@ -38,16 +22,44 @@ def javascript(filename):
 
 @get('/api/getFeedsJP')
 def users():
-    return HTTPResponse({json.dumps(headlines_JP)}, 200)
+    now_time = str(datetime.now())
+    if request.get_cookie("last_visited_JP"):
+        jp_last_refresh = "your last visited was " + request.get_cookie("last_visited_JP")
+        response.set_cookie("last_visited_JP", now_time)
+    else:
+        response.set_cookie("last_visited_JP", now_time)
+        jp_last_refresh = "welcome to jerusalem post, enjoy"
+
+    feed = feedparser.parse("https://www.jpost.com/Rss/RssFeedsHeadlines.aspx")
+    headlines_JP = []
+    for number in range(len(feed["entries"])):
+        headLines = {"titles": feed["entries"][number]["title"], "link": feed["entries"][number]["link"]}
+        headlines_JP.append(headLines)
+
+    return {json.dumps([headlines_JP, jp_last_refresh])}
 
 
 @get('/api/getFeedsDM')
-def users():
-    return HTTPResponse({json.dumps(headlines_DM)}, 200)
+def users2():
+    now_time = str(datetime.now())
+    if request.get_cookie("last_visited_DM"):
+        dm_last_refresh = "your last visited was " + request.get_cookie("last_visited_DM")
+        response.set_cookie("last_visited_DM", now_time)
+    else:
+        response.set_cookie("last_visited_DM", now_time)
+        dm_last_refresh = "welcome to the daily mail, enjoy"
+
+    feed2 = feedparser.parse("http://www.dailymail.co.uk/articles.rss")
+    headlines_DM = []
+    for article in range(len(feed2["entries"])):
+        headLines2 = {"titles": feed2["entries"][article]["title"], "link": feed2["entries"][article]["link"]}
+        headlines_DM.append(headLines2)
+
+    return {json.dumps([headlines_DM, dm_last_refresh])}
 
 
 def main():
-    run(host="localhost", port=7000)
+    run(host="localhost", port=7001)
 
 
 if __name__ == "__main__":
